@@ -22,5 +22,5 @@ KAYNAK KOD
 "Kaynak Kod" klasorunde programin Python hali var (Python 3 ile calisir).
 
 TELIF
-(c) 2026 YGS. Tum haklari saklidir. Izinsiz kopyalanamaz, degistirilemez,
-dagitilamaz. Ayrintilar icin LICENSE dosyasina bakin.
+(c) 2026 YGS. MIT Lisansi ile yayimlanmistir. Telif satiri korunmak sartiyla
+serbestce kullanilabilir. Ayrintilar icin LICENSE dosyasina bakin.

@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2026 YGS. Tüm hakları saklıdır. All rights reserved.
- * İzinsiz kopyalanamaz, değiştirilemez, dağıtılamaz. Bkz. LICENSE.
+ * Copyright (c) 2026 YGS. MIT License. Bkz. LICENSE.
  */
 package com.serhad.hesapmakinesi;
 

@@ -1,27 +1,21 @@
-Copyright (c) 2026 YGS. Tüm hakları saklıdır.
-Copyright (c) 2026 YGS. All rights reserved.
+MIT License
 
-Bu depodaki kaynak kod, çalıştırılabilir dosyalar, görseller ve diğer tüm
-içerik YGS'ye aittir. YGS'nin önceden yazılı izni olmadan bu yazılımın veya
-herhangi bir bölümünün kopyalanması, değiştirilmesi, birleştirilmesi,
-yayımlanması, dağıtılması, alt lisanslanması, satılması veya ticari ya da
-kişisel projelerde kullanılması yasaktır.
+Copyright (c) 2026 YGS
 
-Bu depoyu GitHub üzerinde görüntülemek ve GitHub'ın Hizmet Şartları'nın
-izin verdiği ölçüde çatallamak (fork) bu izin kapsamındadır.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-YAZILIM "OLDUĞU GİBİ" SUNULUR; AÇIK VEYA ZIMNİ HİÇBİR GARANTİ VERİLMEZ.
-YAZAR, YAZILIMDAN DOĞAN HİÇBİR ZARARDAN SORUMLU TUTULAMAZ.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
----
-
-The source code, executables, images and all other content in this
-repository are the property of YGS. No part of this software may be copied,
-modified, merged, published, distributed, sublicensed, sold, or used in any
-project, commercial or personal, without the prior written permission of YGS.
-
-Viewing the repository on GitHub and forking it within the GitHub Terms of
-Service is permitted.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE AUTHOR
-SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM ITS USE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

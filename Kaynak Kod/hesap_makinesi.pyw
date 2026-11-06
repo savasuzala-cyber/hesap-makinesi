@@ -2,13 +2,12 @@
 
 Çalıştırmak için dosyaya çift tıkla ya da: python hesap_makinesi.pyw
 
-Copyright (c) 2026 YGS. Tüm hakları saklıdır.
-Bu yazılımın izinsiz kopyalanması, değiştirilmesi, dağıtılması veya
-ticari amaçla kullanılması yasaktır. Ayrıntılar için LICENSE dosyasına bakın.
+Copyright (c) 2026 YGS. MIT Lisansı ile dağıtılır; telif satırı korunmalıdır.
+Ayrıntılar için LICENSE dosyasına bakın.
 """
 
 __author__ = "YGS"
-__copyright__ = "Copyright (c) 2026 YGS. Tüm hakları saklıdır."
+__copyright__ = "Copyright (c) 2026 YGS. MIT License."
 
 import hashlib
 import sys

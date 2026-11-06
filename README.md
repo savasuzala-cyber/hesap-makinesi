@@ -24,6 +24,6 @@ python "Kaynak Kod/hesap_makinesi.pyw"
 
 ## Telif ve Lisans
 
-© 2026 YGS. Tüm hakları saklıdır.
+© 2026 YGS. [MIT Lisansı](LICENSE) ile yayımlanmıştır.
 
-Bu yazılım izinsiz kopyalanamaz, değiştirilemez, dağıtılamaz veya kullanılamaz. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
+Herkes ücretsiz kullanabilir, değiştirebilir ve dağıtabilir; tek şart telif satırının ve lisans metninin korunmasıdır.
