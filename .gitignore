@@ -8,3 +8,6 @@ Kaynak Kod/dist/
 *.bak
 *.pyc
 __pycache__/
+
+# Exe dosyalari repoya girmez, Releases'ten dagitilir
+*.exe
