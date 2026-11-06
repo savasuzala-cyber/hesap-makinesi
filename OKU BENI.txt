@@ -1,0 +1,26 @@
+﻿HESAP MAKINESI
+==============
+
+KURULUM GEREKMEZ
+HesapMakinesi.exe dosyasina cift tiklayin. Python veya baska bir program
+kurulu olmasi gerekmez. Windows 10 ve 11 (64 bit) uzerinde calisir.
+Klasoru USB bellege atip baska bilgisayara goturebilirsiniz.
+
+ILK ACILISTA UYARI CIKARSA
+Windows "Bilgisayarinizi korudu" (SmartScreen) uyarisi gosterebilir, cunku
+program imzali degildir. "Ek bilgi" -> "Yine de calistir" deyin.
+
+TUSLAR
+AC+ / AC- / AC* / AC/ : Ekrandaki sayiyi biriken toplama isler, ekrani sifirlar.
+AC=                   : Toplami verir (ekrandaki sayi da son AC isleminle katilir).
+%+ / %-               : 100 %+ 20 = 120,  100 %- 20 = 80
+AC                    : Her seyi siler.
+
+Ornek: 100 AC+  25 AC+  10  AC=  ->  135
+
+KAYNAK KOD
+"Kaynak Kod" klasorunde programin Python hali var (Python 3 ile calisir).
+
+TELIF
+(c) 2026 YGS. Tum haklari saklidir. Izinsiz kopyalanamaz, degistirilemez,
+dagitilamaz. Ayrintilar icin LICENSE dosyasina bakin.

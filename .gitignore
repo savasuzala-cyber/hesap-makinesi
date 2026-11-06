@@ -1,0 +1,10 @@
+# GİZLİ: Android imza anahtarı asla GitHub'a yüklenmemeli
+*.keystore
+*.jks
+
+# Derleme çıktıları ve yedekler
+Kaynak Kod/build/
+Kaynak Kod/dist/
+*.bak
+*.pyc
+__pycache__/

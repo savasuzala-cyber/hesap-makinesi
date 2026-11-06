@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Hesap Makinesi</title>
+<style>
+  /* Renkler masaüstü sürümüyle (hesap_makinesi.pyw) aynı */
+  :root{
+    --case:#232a2d; --lcd:#cbd6c4; --lcd-ink:#1c2a21; --lcd-dim:#55665a;
+    --key:#3b4549; --key-ink:#f2f5f4; --fn:#5d696e; --fn-ink:#f2f5f4;
+    --op:#2a8a84; --op-ink:#f3fbfa; --op-on:#1b5f5b; --eq:#e2a71f; --eq-ink:#2b1e00;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+  html,body{margin:0;height:100%;background:var(--case);font-family:"Segoe UI",system-ui,Roboto,sans-serif}
+  body{display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 14px) 12px calc(env(safe-area-inset-bottom) + 12px)}
+  .lcd{background:var(--lcd);color:var(--lcd-ink);border-radius:14px;padding:12px 16px 10px;
+    display:flex;flex-direction:column;align-items:stretch;flex:0 0 auto;min-height:24vh;justify-content:flex-end;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+  .stored{color:var(--lcd-dim);font-size:17px;min-height:22px;text-align:left;
+    font-family:Consolas,"Roboto Mono",monospace}
+  .expr{color:var(--lcd-dim);font-size:20px;min-height:26px;text-align:right;word-break:break-all;
+    font-family:Consolas,"Roboto Mono",monospace;margin-top:6px}
+  .val{font-size:58px;line-height:1.15;text-align:right;word-break:break-all;margin-top:2px;
+    font-family:Consolas,"Roboto Mono",monospace}
+  .keys{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(7,1fr);
+    gap:9px;margin-top:14px;min-height:0}
+  button.k{border:none;border-radius:14px;font-size:26px;font-weight:600;min-height:0;
+    font-family:"Segoe UI",system-ui,Roboto,sans-serif}
+  button.k:active{filter:brightness(1.3)}
+  .k.key{background:var(--key);color:var(--key-ink)}
+  .k.fn{background:var(--fn);color:var(--fn-ink);font-size:22px}
+  .k.op{background:var(--op);color:var(--op-ink)}
+  .k.op.on{background:var(--op-on)}
+  .k.eq{background:var(--eq);color:var(--eq-ink)}
+</style>
+</head>
+<body>
+  <div class="lcd">
+    <div class="stored" id="stored"></div>
+    <div class="expr" id="expr"></div>
+    <div class="val" id="val">0</div>
+  </div>
+  <div class="keys" id="keys"></div>
+  <div id="sig"></div>
+
+<script>
+/* Copyright (c) 2026 YGS. Tüm hakları saklıdır. All rights reserved. */
+(function(){
+  // Gömülü imza: silinirse ya da gizlenirse kendiliğinden geri eklenir.
+  var SIG = "© 2026 YGS";
+  function sig(){
+    var e = document.getElementById("sig");
+    if(!e){ e = document.createElement("div"); e.id = "sig"; document.body.appendChild(e); }
+    e.textContent = SIG;
+    e.setAttribute("style","text-align:center;font-size:11px;color:#55665a;padding-top:6px;display:block;visibility:visible;opacity:1;height:auto");
+  }
+  sig(); setInterval(sig, 1500);
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  // ---- Sabitler (masaüstü sürümüyle aynı) ----
+  var SYMBOLS = {"+":"+","-":"−","*":"×","/":"÷","%":"%","%+":"%+","%-":"%−"};
+  var MAX_DIGITS = 15;
+  var DIV_ZERO = "Sıfıra bölünemez";
+  var KDV_RATE = 20;
+  var LAYOUT = [
+    [["AC+","fn","store_add"],["AC−","fn","store_sub"],["AC×","fn","store_mul"],["AC÷","fn","store_div"]],
+    [["AC=","eq","store_eq"],["KDV−","fn","kdv_minus"],["%+","op","%+"],["%−","op","%-"]],
+    [["AC","fn","clear"],["⌫","fn","back"],["%","op","%"],["÷","op","/"]],
+    [["7","key","7"],["8","key","8"],["9","key","9"],["×","op","*"]],
+    [["4","key","4"],["5","key","5"],["6","key","6"],["−","op","-"]],
+    [["1","key","1"],["2","key","2"],["3","key","3"],["+","op","+"]],
+    [["±","key","negate"],["0","key","0"],[",","key","dot"],["=","eq","equals"]]
+  ];
+
+  // ---- Biçimlendirme: binlik ayracı nokta, ondalık ayracı virgül ----
+  // ondalık metni 2 haneye yuvarlar; yarım değerler yukarı (ROUND_HALF_UP)
+  function round2(s){
+    var neg = s.charAt(0) === "-"; if (neg) s = s.slice(1);
+    var p = s.split("."), w = p[0], f = (p[1] || "") + "000";
+    var keep = w + f.slice(0, 2), rest = f.slice(2).replace(/0+$/, "");
+    var up = false;
+    if (rest.length && rest.charAt(0) >= "5") up = true;   // ROUND_HALF_UP: 0,125 → 0,13
+    if (up){                                   // metin üzerinde +1
+      var a = keep.split(""), i = a.length - 1;
+      while (i >= 0){ if (a[i] === "9"){ a[i] = "0"; i--; } else { a[i] = String(+a[i] + 1); break; } }
+      if (i < 0) a.unshift("1");
+      keep = a.join("");
+    }
+    var out = keep.slice(0, -2) + "." + keep.slice(-2);
+    if (out.charAt(0) === ".") out = "0" + out;
+    return (neg ? "-" : "") + out;
+  }
+  function sci2(s){                            // Python format(Decimal(s), '.2e')
+    var n = parseFloat(s), e = n.toExponential(2);   // 1.23e+20
+    var m = e.split("e"), ex = parseInt(m[1], 10);
+    return m[0] + "e" + (ex < 0 ? "-" : "+") + Math.abs(ex);
+  }
+  function format_number(s){
+    if (s.toLowerCase().indexOf("e") >= 0) return sci2(s).replace(".", ",").replace(/-/g, "−");
+    if (s.indexOf(".") >= 0 && s.slice(-1) !== ".") s = round2(s);
+    var neg = s.charAt(0) === "-"; if (neg) s = s.slice(1);
+    var i = s.indexOf("."), whole = i < 0 ? s : s.slice(0, i), sep = i >= 0, frac = sep ? s.slice(i + 1) : "";
+    var out = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    if (sep) out += "," + frac;
+    return (neg ? "−" : "") + out;
+  }
+  function pyRepr(n){                          // Python float repr
+    if (n === 0) return (1 / n < 0) ? "-0.0" : "0.0";
+    var a = Math.abs(n);
+    if (a >= 1e16 || a < 1e-4){
+      var e = n.toExponential(), m = e.split("e"), ex = parseInt(m[1], 10);
+      return m[0] + "e" + (ex < 0 ? "-" : "+") + (Math.abs(ex) < 10 ? "0" : "") + Math.abs(ex);
+    }
+    var s = String(n);
+    return s.indexOf(".") < 0 ? s + ".0" : s;
+  }
+  function to_text(x){             // sayıyı iç gösterime çevirir (ondalık ayracı ".")
+    var n = parseFloat(x.toPrecision(15));          // float(format(n, '.15g')) — 15 basamak
+    if (n === Math.trunc(n) && Math.abs(n) < 1e15) return String(Math.trunc(n) || 0);
+    return pyRepr(n);
+  }
+
+  // ---- Hesap mantığı ----
+  var C = {
+    stored:null, stored_op:null,
+    _reset:function(){ this.cur="0"; this.prev=null; this.op=null; this.pending=false;
+      this.replace=false; this.error=false; this.entered=false; this.expr=""; },
+    clear:function(){ this.stored=null; this.stored_op=null; this._reset(); }, // AC: hepsini siler
+    display:function(){ return this.error ? this.cur : format_number(this.cur); },
+    stored_text:function(){ return this.stored === null ? "" : "Bekleyen: " + format_number(to_text(this.stored)); },
+    _compute:function(a,b,op){
+      var r;
+      if (op==="+") r=a+b; else if (op==="-") r=a-b; else if (op==="*") r=a*b;
+      else if (op==="%") r=a*b/100;
+      else if (op==="%+") r=a+a*b/100;
+      else if (op==="%-") r=a-a*b/100;
+      else { if (b===0) return null; r=a/b; }
+      if (!isFinite(r)) return null;
+      return r;
+    },
+    _fail:function(){ this._reset(); this.error=true; this.cur=DIV_ZERO; },
+    digit:function(d){
+      if (this.error) this._reset();
+      this.entered=true;
+      if (this.replace){ if (this.op===null) this.expr=""; this.cur=d; this.replace=false; this.pending=false; return; }
+      if (this.cur==="0") { this.cur=d; return; }
+      if (this.cur==="-0") { this.cur="-"+d; return; }
+      if (this.cur.replace(/\D/g,"").length < MAX_DIGITS) this.cur+=d;
+    },
+    dot:function(){
+      if (this.error) this._reset();
+      this.entered=true;
+      if (this.replace){ if (this.op===null) this.expr=""; this.cur="0."; this.replace=false; this.pending=false; return; }
+      if (this.cur.indexOf(".")<0) this.cur+=".";
+    },
+    set_op:function(op){
+      if (this.error) return;
+      if (this.op!==null && !this.pending){
+        var r=this._compute(this.prev, parseFloat(this.cur), this.op);
+        if (r===null) return this._fail();
+        this.cur=to_text(r);
+      }
+      this.prev=parseFloat(this.cur); this.op=op; this.pending=true; this.replace=true;
+      this.expr=format_number(to_text(this.prev))+" "+SYMBOLS[op];
+    },
+    equals:function(){
+      if (this.error || this.op===null) return;
+      var b=parseFloat(this.cur);
+      var r=this._compute(this.prev, b, this.op);
+      if (r===null) return this._fail();
+      this.expr=format_number(to_text(this.prev))+" "+SYMBOLS[this.op]+" "+format_number(to_text(b))+" =";
+      this.cur=to_text(r); this.prev=null; this.op=null; this.pending=false; this.replace=true;
+    },
+    negate:function(){
+      if (this.error) return;
+      this.cur = this.cur.charAt(0)==="-" ? this.cur.slice(1) : "-"+this.cur;
+      this.pending=false;
+    },
+    // KDV−: ekrandaki KDV dahil fiyattan KDV hariç tutarı bulur. 580 → 580 ÷ 1,20 = 483,33
+    kdv_minus:function(){
+      if (this.error) return;
+      this._finish_pending(); if (this.error) return;
+      var gross=parseFloat(this.cur), net=gross/(1+KDV_RATE/100);
+      this._reset();
+      this.expr=format_number(to_text(gross))+" KDV− (%"+KDV_RATE+") =";
+      this.cur=to_text(net); this.replace=true;
+    },
+    back:function(){
+      if (this.error){ this._reset(); return; }
+      if (this.replace) return;
+      this.cur=this.cur.slice(0,-1);
+      if (this.cur===""||this.cur==="-") this.cur="0";
+    },
+    _finish_pending:function(){   // yarım işlemi bitirir; ekranda sayı varsa true
+      if (this.op!==null && !this.pending) this.equals();
+      return !this.error && (this.entered || this.replace);
+    },
+    // AC+ / AC− / AC× / AC÷: ekrandaki sayıyı biriken toplama işler, ekranı sıfırlar
+    _store:function(op){
+      if (this.error) return;
+      var has_value=this._finish_pending(); if (this.error) return;
+      var value=parseFloat(this.cur), first=this.stored;
+      this._reset();
+      if (first===null){ this.stored=value; this.stored_op=op; return; }
+      if (!has_value){ this.stored_op=op; return; }
+      var r=this._compute(first, value, op);
+      if (r===null) return this._fail();
+      this.stored=r; this.stored_op=op;
+    },
+    // AC=: biriken toplamı verir; ekranda sayı varsa son AC işlemiyle katar
+    store_eq:function(){
+      if (this.error || this.stored===null) return;
+      var has_value=this._finish_pending(); if (this.error) return;
+      var value=parseFloat(this.cur), first=this.stored, op=this.stored_op, r;
+      this._reset();
+      if (has_value){
+        r=this._compute(first, value, op);
+        if (r===null) return this._fail();
+        this.expr=format_number(to_text(first))+" "+SYMBOLS[op]+" "+format_number(to_text(value))+" =";
+      } else { r=first; this.expr="Toplam ="; }
+      this.stored=null; this.stored_op=null;
+      this.cur=to_text(r); this.replace=true;
+    },
+    store_add:function(){this._store("+");}, store_sub:function(){this._store("-");},
+    store_mul:function(){this._store("*");}, store_div:function(){this._store("/");}
+  };
+  C._reset();
+
+  // ---- Arayüz ----
+  var $ = function(id){return document.getElementById(id);};
+  var opButtons = {};
+  LAYOUT.forEach(function(row){
+    row.forEach(function(k){
+      var b=document.createElement("button");
+      b.className="k "+k[1]; b.textContent=k[0]; b.dataset.action=k[2];
+      if (SYMBOLS.hasOwnProperty(k[2])) opButtons[k[2]]=b;
+      $("keys").appendChild(b);
+    });
+  });
+  function render(){
+    $("stored").textContent=C.stored_text();
+    $("expr").textContent=C.expr;
+    var t=C.display(); $("val").textContent=t;
+    $("val").style.fontSize = t.length>16 ? "34px" : t.length>12 ? "44px" : "58px";
+    for (var o in opButtons) opButtons[o].classList.toggle("on", C.pending && C.op===o);
+  }
+  function press(a){
+    if (/^\d$/.test(a)) C.digit(a);
+    else if (SYMBOLS.hasOwnProperty(a)) C.set_op(a);
+    else if (typeof C[a]==="function") C[a]();
+    render();
+  }
+  $("keys").addEventListener("click", function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    if (navigator.vibrate){ try{navigator.vibrate(8);}catch(x){} }
+    press(b.dataset.action);
+  });
+  window.handleBack=function(){return false;};
+  window.__calc=C; window.__press=press;   // test için
+  render();
+})();
+</script>
+</body>
+</html>
